@@ -5,10 +5,16 @@ from spacetime_local.declarations import Producer, GetterSetter, Getter
 #from lxml import html,etree
 import re, os
 from time import time
+from time import gmtime, strftime
+import hashlib
+import os
+import re
+import lxml.html
+import requests
 
 try:
     # For python 2
-    from urlparse import urlparse, parse_qs
+    from urlparse import urlparse, parse_qs,urljoin
 except ImportError:
     # For python 3
     from urllib.parse import urlparse, parse_qs
@@ -19,7 +25,7 @@ LOG_HEADER = "[CRAWLER]"
 url_count = (set() 
     if not os.path.exists("successful_urls.txt") else 
     set([line.strip() for line in open("successful_urls.txt").readlines() if line.strip() != ""]))
-MAX_LINKS_TO_DOWNLOAD = 3000
+MAX_LINKS_TO_DOWNLOAD = 10
 
 @Producer(ProducedLink)
 @GetterSetter(OneUnProcessedGroup)
@@ -28,10 +34,10 @@ class CrawlerFrame(IApplication):
     def __init__(self, frame):
         self.starttime = time()
         # Set app_id <student_id1>_<student_id2>...
-        self.app_id = ""
+        self.app_id = "18164476_74047877"
         # Set user agent string to IR W17 UnderGrad <student_id1>, <student_id2> ...
         # If Graduate studetn, change the UnderGrad part to Grad.
-        self.UserAgentString = None
+        self.UserAgentString = "IR W17 Grad 18164476, 74047877"
 		
         self.frame = frame
         assert(self.UserAgentString != None)
@@ -60,8 +66,9 @@ class CrawlerFrame(IApplication):
             self.done = True
 
     def shutdown(self):
-        print "downloaded ", len(url_count), " in ", time() - self.starttime, " seconds."
-        pass
+		print "downloaded ", len(url_count), " in ", time() - self.starttime, " seconds."
+		analytics()
+		pass
 
 def save_count(urls):
     global url_count
@@ -81,8 +88,8 @@ def process_url_group(group, useragentstr):
 STUB FUNCTIONS TO BE FILLED OUT BY THE STUDENT.
 '''
 def extract_next_links(rawDatas):
-    outputLinks = list()
-    '''
+	outputLinks = list()
+	'''
     rawDatas is a list of objs -> [raw_content_obj1, raw_content_obj2, ....]
     Each obj is of type UrlResponse  declared at L28-42 datamodel/search/datamodel.py
     the return of this function should be a list of urls in their absolute form
@@ -91,8 +98,43 @@ def extract_next_links(rawDatas):
     The frontier takes care of that.
 
     Suggested library: lxml
-    '''
-    return outputLinks
+	'''
+	generated = open("generated_urls.txt", "a")
+	
+	for rawData in rawDatas:
+		try:
+			parent_url = rawData.url
+			generated.write("[" + strftime('%X %x %Z') +"]" + parent_url + "\n")
+			page = rawData.content
+			 
+			if page != None:
+				if (len(page) > 0):
+					html = lxml.html.fromstring(page)
+				else:
+					generated.write("[" + strftime('%X %x %Z') + "]" + " Encountered URL with no page" + "\n")
+					continue
+			else:
+				generated.write("[" + strftime('%X %x %Z') + "]" + " Encountered URL with page None" + "\n")
+				continue
+			temp_url_list = []
+			for link in html.iterlinks():
+				try:
+					sub_url = (link[2])
+					parent_url_parsed= urlparse(parent_url)
+					sub_url_parsed = urlparse(sub_url)
+					new_url = urljoin(parent_url_parsed.geturl(), sub_url_parsed.geturl())
+					generated.write("   " + "original link" + "[" + strftime('%X %x %Z') + "]" + sub_url_parsed.geturl() + "\n")
+					generated.write("   " + "[" + strftime('%X %x %Z') +"]" + new_url + "\n")
+					temp_url_list.append(new_url)
+				except Exception as c:
+					generated.write("[" + strftime('%X %x %Z') + "]" + " Encountered exception in parsing link " + str(c) + "\n")
+					continue
+			outputLinks.extend(temp_url_list)
+			log_url_count(parent_url, len(temp_url_list))
+		except Exception as e:
+			generated.write("[" + strftime('%X %x %Z') + "]" + " Encountered exception in parsing main url or error in page" + str(e) + "\n")
+			continue 
+	return outputLinks
 
 def is_valid(url):
     '''
@@ -114,3 +156,60 @@ def is_valid(url):
 
     except TypeError:
         print ("TypeError for ", parsed)
+
+		
+		
+# LOG INVALID URL RECEIVED FROM FRONTIER
+def log_invalid_url(url):
+        with open("invalid_urls.txt", "a") as invalid_url:
+            invalid_url.write("\n".join(url) + "\n")
+            invalid_url.close()
+
+# GET THE COUNT OF INVALID URL RECEIVED FROM FRONTIER
+def count_invalid_url():
+    if os.path.isfile("invalid_urls.txt"):
+        with open("invalid_urls.txt", "r") as invalidurl:
+            s= []
+            for i in invalidurl:
+                s.append(i)
+        return len(s)
+    else:
+        return 0
+
+# LOG URL, NUMBER OF LINKS EXTRACTED FOR VALID URL RECIEVED FORM FRONTIER	
+def log_url_count(url, count):
+    if count == None:
+        count = 0
+    with open("url_count.txt", "a") as url_count_file:
+        a=str(str(url)+","+str(count)+'\n')
+        url_count_file.write(a)
+        url_count_file.close()
+
+
+# GET URL HAVING MAXIMUM OUTBOUND LINKS
+def get_url_with_max_outbound():
+	max_count =-1;
+	max_url = None
+	if os.path.isfile("url_count.txt"):
+		with open("url_count.txt", "r") as url_count_file:
+			for line in url_count_file:
+				url_list=line.split(',')
+				url = url_list[0]
+				count = int(url_list[1])
+				if count > max_count:
+					max_count = count
+					max_url = url
+	return max_url, max_count
+	
+	
+	
+# ANALYTICS METHOD FOR CRAWALER				
+def analytics():
+	with open("analytics.txt", "w") as analytics_file:
+		url_key, max_url_count = get_url_with_max_outbound()
+		if(url_key is not None):
+			analytics_file.write("\nURL with max outbound links: " + str(url_key) + "  	, Number of outbound links: " + str(max_url_count))
+		else:
+			analytics_file.write("\n No URL's recieved")
+		invalid_url_count = count_invalid_url()
+		analytics_file.write("\nCount of invalid links recieved: " + str(invalid_url_count))

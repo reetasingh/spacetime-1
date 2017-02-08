@@ -1,0 +1,3 @@
+
+URL with max outbound links: https://duttgroup.ics.uci.edu/doku.php/publications  	, Number of outbound links: 209
+Count of invalid links recieved: 0
