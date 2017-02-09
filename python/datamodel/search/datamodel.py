@@ -392,6 +392,7 @@ class OneUnProcessedGroup(object):
     @staticmethod
     def __predicate__(upl):
         return upl.underprocess <= 10
+	        
 
     def download(self, UserAgentString, is_valid, timeout = 2, MaxPageSize = 1048576, MaxRetryDownloadOnFail = 5, retry_count = 0):
         try:
@@ -413,9 +414,14 @@ class OneUnProcessedGroup(object):
                         l.marked_invalid_by += ["Robot Rule"]
                 else:
                     l.marked_invalid_by += [UserAgentString]
+                    with open("invalid_urls.txt", "a") as invalid_url:
+                        invalid_url.write(l.full_url+ "\n")
+                        invalid_url.close()
             return result, success_urls
         except AttributeError:
             return list(), list()
+			
+	
 
 @subset(Link)
 class DomainCount(object):

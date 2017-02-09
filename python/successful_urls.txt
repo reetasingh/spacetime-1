@@ -1,5 +1,5 @@
-https://cbcl.ics.uci.edu/doku.php/software?do=login&sectok=0981452c470120e3ce5cabd95bb8f9c3
-https://cbcl.ics.uci.edu/doku.php/software?do=login&sectok=3a8000af70e781ffd4ca84d240b84cf2
-https://cbcl.ics.uci.edu/doku.php/software?do=login&sectok=8a867f2597f41f9f3372d4157c302b37
-https://cbcl.ics.uci.edu/doku.php/software?do=login&sectok=915172e970a7be2aa6e6b5ebe3b4e9a2
-https://cbcl.ics.uci.edu/doku.php/software?do=login&sectok=2f0bd3cacebdf25794e9c6c0a9d51b32
+https://cbcl.ics.uci.edu/doku.php/software?do=diff&rev2%5B0%5D=1382072686&rev2%5B1%5D=1382073258&difftype=sidebyside
+https://cbcl.ics.uci.edu/doku.php/software?do=diff&rev2%5B0%5D=1360970237&rev2%5B1%5D=1382072455&difftype=sidebyside
+https://cbcl.ics.uci.edu/doku.php/software?do=login&sectok=363f428a3a2239bc06dbd40d5fed7bf6
+https://cbcl.ics.uci.edu/doku.php/software?do=diff&rev2%5B0%5D=1382072657&rev2%5B1%5D=1382073037&difftype=sidebyside
+https://cbcl.ics.uci.edu/doku.php/software?do=login&sectok=6ee1a5e9f3ee76f8945a5108c7644851
