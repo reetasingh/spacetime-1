@@ -1,5 +1,7 @@
-https://cbcl.ics.uci.edu/doku.php/software?do=diff&rev2%5B0%5D=1382072686&rev2%5B1%5D=1382073258&difftype=sidebyside,42
-https://cbcl.ics.uci.edu/doku.php/software?do=diff&rev2%5B0%5D=1360970237&rev2%5B1%5D=1382072455&difftype=sidebyside,42
-https://cbcl.ics.uci.edu/doku.php/software?do=login&sectok=363f428a3a2239bc06dbd40d5fed7bf6,32
-https://cbcl.ics.uci.edu/doku.php/software?do=diff&rev2%5B0%5D=1382072657&rev2%5B1%5D=1382073037&difftype=sidebyside,42
-https://cbcl.ics.uci.edu/doku.php/software?do=login&sectok=6ee1a5e9f3ee76f8945a5108c7644851,32
+http://ironwood.ics.uci.edu/wiki:ipe_tutorial?rev=1425333769&vecdo=cite,55
+http://ironwood.ics.uci.edu/doku.php?id=wiki:ipe_tutorial&rev=1425333769,71
+http://ironwood.ics.uci.edu/wiki:ipe_tutorial?do=revisions,108
+http://ironwood.ics.uci.edu/_export/raw/wiki:ipe_tutorial,0
+http://ironwood.ics.uci.edu/wiki:ipe_tutorial?rev=1382561306&do=diff,46
+https://mailman.ics.uci.edu/mailman/private/asterixresearch,1
+https://mailman.ics.uci.edu/mailman/listinfo/test1,13

@@ -1,1 +1,1 @@
-cbcl.ics.uci.edu,190
+mailman.ics.uci.edu,12

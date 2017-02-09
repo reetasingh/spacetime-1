@@ -106,15 +106,18 @@ def extract_next_links(rawDatas):
 			parent_url = rawData.url
 			generated.write("[" + strftime('%X %x %Z') +"]" + parent_url + "\n")
 			page = rawData.content
-			 
-			if page != None:
+			
+			# if page is not found and similar other http response where page is blank
+			if page != None  or rawData.httpcode not in [204,400,401,402,403,405,406,408,409,410,411,412,413,414,415,416,417,451]:
 				if (len(page) > 0):
 					html = lxml.html.fromstring(page)
 				else:
 					generated.write("[" + strftime('%X %x %Z') + "]" + " Encountered URL with no page" + "\n")
+					rawData.bad_url = False
 					continue
 			else:
-				generated.write("[" + strftime('%X %x %Z') + "]" + " Encountered URL with page None" + "\n")
+				generated.write("[" + strftime('%X %x %Z') + "]" + " Encountered URL with page issue - " + rawData.httpcode + "\n")
+				rawData.bad_url = False
 				continue
 			temp_url_list = []
 			for link in html.iterlinks():
@@ -216,7 +219,9 @@ def analytics():
 		analytics_file.write("\nCount of invalid links recieved: " + str(invalid_url_count))
 		write_subdomain()
 		
-		
+# METHOD TO UPDATE THE COUNT OF SUBDOMAINS VISITED
+# DATA IS STORED IN A DICTIONARY WITH SUBDOMAIN AS KEY AND COUNT AS VALUE
+# VALUE UPDATED ONCE URL WITH THAT SUBDOMAIN IS PROCESSED(RECIEVED AS WELL AS SENT TO FRONTIER)		
 def update_subdomains_count(url):
 	print "update function"
 	try:
@@ -247,6 +252,7 @@ def update_subdomains_count(url):
 		pass
 	
 
+# WRITE THE SUBDOMAIN ON THE FILE - SUBDOMAIN.TXT
 def write_subdomain():
     with open("subdomain.txt", "w") as myfile:
         for url,count in dict_subdomains.iteritems():

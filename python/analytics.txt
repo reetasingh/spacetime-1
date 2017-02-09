@@ -1,3 +1,3 @@
 
-URL with max outbound links: https://cbcl.ics.uci.edu/doku.php/software?do=diff&rev2%5B0%5D=1382072686&rev2%5B1%5D=1382073258&difftype=sidebyside  	, Number of outbound links: 42
+URL with max outbound links: http://ironwood.ics.uci.edu/wiki:ipe_tutorial?do=revisions  	, Number of outbound links: 108
 Count of invalid links recieved: 0

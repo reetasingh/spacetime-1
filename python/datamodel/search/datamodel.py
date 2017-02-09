@@ -12,6 +12,7 @@ from pcc.projection import projection
 from pcc.attributes import dimension, primarykey, count
 from pcc.impure import impure
 import socket, base64, requests
+import time
 try:
     from urllib2 import Request, urlopen, HTTPError, URLError
     from urlparse import urlparse, parse_qs
@@ -398,8 +399,10 @@ class OneUnProcessedGroup(object):
         try:
             success_urls = list()
             result = list()
+            url_time_download = open("url_dowload_time.txt", "a")
             for l in self.link_group:
                 if is_valid(l.full_url):
+                    start = time.time()
                     if robot_manager.Allowed(l.full_url, UserAgentString):
                         content, success = l.download(
                             UserAgentString,
@@ -408,6 +411,9 @@ class OneUnProcessedGroup(object):
                             MaxRetryDownloadOnFail,
                             retry_count)
                         if success:
+                            end = time.time()
+                            time_diff = end - start
+                            url_time_download.write(l.full_url+  "  ," + str(time_diff) + "\n")
                             success_urls.append(l.full_url)
                         result.append(content)
                     else:
@@ -417,6 +423,7 @@ class OneUnProcessedGroup(object):
                     with open("invalid_urls.txt", "a") as invalid_url:
                         invalid_url.write(l.full_url+ "\n")
                         invalid_url.close()
+			url_time_download.close()
             return result, success_urls
         except AttributeError:
             return list(), list()
