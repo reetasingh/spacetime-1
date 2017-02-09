@@ -1,3 +1,4 @@
 
-URL with max outbound links: http://ironwood.ics.uci.edu/wiki:ipe_tutorial?do=revisions  	, Number of outbound links: 108
+URL with max outbound links: http://wics.ics.uci.edu/contact  	, Number of outbound links: 110
 Count of invalid links recieved: 0
+ Average download time: 0.281400012971 seconds

@@ -1,7 +1,5 @@
-http://ironwood.ics.uci.edu/wiki:ipe_tutorial?rev=1425333769&vecdo=cite
-http://ironwood.ics.uci.edu/doku.php?id=wiki:ipe_tutorial&rev=1425333769
-http://ironwood.ics.uci.edu/wiki:ipe_tutorial?do=revisions
-http://ironwood.ics.uci.edu/_export/raw/wiki:ipe_tutorial
-http://ironwood.ics.uci.edu/wiki:ipe_tutorial?rev=1382561306&do=diff
-https://mailman.ics.uci.edu/mailman/private/asterixresearch
-https://mailman.ics.uci.edu/mailman/listinfo/test1
+https://www.ics.uci.edu/about/annualreport/2005-06/alumni.php
+http://www.ics.uci.edu/community/news/articles/view_article?id=58
+http://www.ics.uci.edu/community/news/articles/view_article?id=50
+http://wics.ics.uci.edu/contact
+https://www.ics.uci.edu/community/news/press/index.php

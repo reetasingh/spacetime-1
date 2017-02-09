@@ -217,7 +217,9 @@ def analytics():
 			analytics_file.write("\n No URL's recieved")
 		invalid_url_count = count_invalid_url()
 		analytics_file.write("\nCount of invalid links recieved: " + str(invalid_url_count))
+		analytics_file.write("\n Average download time: " + str(computer_average_download_time()) + " seconds")
 		write_subdomain()
+		
 		
 # METHOD TO UPDATE THE COUNT OF SUBDOMAINS VISITED
 # DATA IS STORED IN A DICTIONARY WITH SUBDOMAIN AS KEY AND COUNT AS VALUE
@@ -258,4 +260,18 @@ def write_subdomain():
         for url,count in dict_subdomains.iteritems():
             myfile.write(url+","+ str(count)+"\n")
     myfile.close()	
+
+# READ  THE DOWNLOAD TIME OF ALL THE DOWNLOADED URLS AND GIVE AVERAGE DOWNLOAD TIME
+def computer_average_download_time():
+	average_time = 0.0
+	count_lines = 0
+	if os.path.isfile("url_download_time.txt"):
+		with open("url_download_time.txt", "r") as url_download_time_file:
+			for line in url_download_time_file:
+				url_list=line.split(',')
+				time_download = float(url_list[1])
+				average_time = average_time + time_download
+				count_lines = count_lines + 1
+			average_dwnl_time = float(average_time/ count_lines)
+			return average_dwnl_time
 	

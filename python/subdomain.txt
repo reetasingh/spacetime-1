@@ -1,1 +1,5 @@
-mailman.ics.uci.edu,12
+wics.ics.uci.edu,92
+alumni.ics.uci.edu,1
+calendar.ics.uci.edu,6
+www.ics.uci.edu,253
+intranet.ics.uci.edu,3

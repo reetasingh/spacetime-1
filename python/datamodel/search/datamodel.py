@@ -399,7 +399,7 @@ class OneUnProcessedGroup(object):
         try:
             success_urls = list()
             result = list()
-            url_time_download = open("url_dowload_time.txt", "a")
+            url_time_download = open("url_download_time.txt", "a")
             for l in self.link_group:
                 if is_valid(l.full_url):
                     start = time.time()
