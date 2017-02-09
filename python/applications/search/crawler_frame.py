@@ -25,8 +25,8 @@ LOG_HEADER = "[CRAWLER]"
 url_count = (set() 
     if not os.path.exists("successful_urls.txt") else 
     set([line.strip() for line in open("successful_urls.txt").readlines() if line.strip() != ""]))
-MAX_LINKS_TO_DOWNLOAD = 10
-
+MAX_LINKS_TO_DOWNLOAD = 5
+dict_subdomains = {}
 @Producer(ProducedLink)
 @GetterSetter(OneUnProcessedGroup)
 class CrawlerFrame(IApplication):
@@ -143,6 +143,7 @@ def is_valid(url):
 
     This is a great place to filter out crawler traps.
     '''
+    update_subdomains_count(url)
     parsed = urlparse(url)
     if parsed.scheme not in set(["http", "https"]):
         return False
@@ -213,3 +214,42 @@ def analytics():
 			analytics_file.write("\n No URL's recieved")
 		invalid_url_count = count_invalid_url()
 		analytics_file.write("\nCount of invalid links recieved: " + str(invalid_url_count))
+		write_subdomain()
+		
+		
+def update_subdomains_count(url):
+	print "update function"
+	try:
+		parsed = urlparse(url)
+		if (".ics.uci.edu" in parsed.hostname):
+			new_hostname = parsed.hostname[0:len(parsed.hostname) - 12]
+			list_hostname = list(new_hostname)
+			print list_hostname
+			str=""
+			for k in range(len(list_hostname)-1,-1,-1):
+				if list_hostname[k] == '.':
+					break
+				str= str+ list_hostname[k]
+			print (str)
+			if (len(str) > 0):
+				str = str[::-1]
+				if str =="www":
+					str = "www.ics.uci.edu"
+				else:
+					str = str +".ics.uci.edu"
+				if (str in dict_subdomains.keys()):
+					dict_subdomains[str] = int(dict_subdomains[str]) +1
+				else:
+					dict_subdomains[str] = 1
+				print dict_subdomains
+	except Exception as e:
+		print e
+		pass
+	
+
+def write_subdomain():
+    with open("subdomain.txt", "w") as myfile:
+        for url,count in dict_subdomains.iteritems():
+            myfile.write(url+","+ str(count)+"\n")
+    myfile.close()	
+	
