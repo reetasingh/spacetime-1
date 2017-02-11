@@ -421,6 +421,7 @@ class OneUnProcessedGroup(object):
                 else:
                     l.marked_invalid_by += [UserAgentString]
                     with open("invalid_urls.txt", "a") as invalid_url:
+                        l.bad_url = True
                         invalid_url.write(l.full_url+ "\n")
                         invalid_url.close()
 			url_time_download.close()
