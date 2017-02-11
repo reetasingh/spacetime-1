@@ -1,0 +1,4 @@
+
+URL with max outbound links: http://www.ics.uci.edu/about/bren/bren_press.php/bren_vision.php/grad/gallery/gallery/bren_advance.php  	, Number of outbound links: 152
+Count of invalid links recieved: 115
+ Average download time: 0.175 seconds

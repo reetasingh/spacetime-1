@@ -1,0 +1,5 @@
+http://www.ics.uci.edu/faculty/index.php/highlights/index.php/centers/index.php/area/centers/index.php?letter=A  ,0.358999967575
+http://www.ics.uci.edu/about/bren/bren_vision.php/ICS/bren_press.php/brenhall/visit/brenhall/visit  ,0.141000032425
+http://www.ics.uci.edu/about/bren/bren_press.php/grad/gallery/gallery/gallery_13_jpg.php  ,0.125
+http://www.ics.uci.edu/about/bren/bren_press.php/bren_vision.php/grad/gallery/gallery/bren_advance.php  ,0.109999895096
+http://www.ics.uci.edu/about/bren/bren_vision.php/ICS/bren_press.php/ugrad/about_deanmsg.php/about_mission.php  ,0.140000104904

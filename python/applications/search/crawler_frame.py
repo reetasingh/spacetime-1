@@ -11,6 +11,9 @@ import os
 import re
 import lxml.html
 import requests
+import re
+import collections
+
 
 try:
     # For python 2
@@ -140,28 +143,41 @@ def extract_next_links(rawDatas):
 	return outputLinks
 
 def is_valid(url):
-    '''
-    Function returns True or False based on whether the url has to be downloaded or not.
-    Robot rules and duplication rules are checked separately.
-
-    This is a great place to filter out crawler traps.
-    '''
-    update_subdomains_count(url)
-    parsed = urlparse(url)
-    if parsed.scheme not in set(["http", "https"]):
-        return False
-    try:
-        return ".ics.uci.edu" in parsed.hostname \
-            and not re.match(".*\.(css|js|bmp|gif|jpe?g|ico" + "|png|tiff?|mid|mp2|mp3|mp4"\
-            + "|wav|avi|mov|mpeg|ram|m4v|mkv|ogg|ogv|pdf" \
-            + "|ps|eps|tex|ppt|pptx|doc|docx|xls|xlsx|names|data|dat|exe|bz2|tar|msi|bin|7z|psd|dmg|iso|epub|dll|cnf|tgz|sha1" \
-            + "|thmx|mso|arff|rtf|jar|csv"\
-            + "|rm|smil|wmv|swf|wma|zip|rar|gz)$", parsed.path.lower())
-
-    except TypeError:
-        print ("TypeError for ", parsed)
-
+	update_subdomains_count(url)
+	parsed = urlparse(url)
+	if parsed.scheme not in set(["http", "https"]):
+		return False
+	   
+	if len(parsed.netloc) == 0:
+		return False
+	
+	if " " in url:
+		return False
+	   
+	# Check if repeated words in the url - (path, fragment , query ): if word repeated more than 5 times, then the url is invalid
+	if len(parsed.path) > 0:
+		data = str(parsed.path)
+		if len(parsed.query) > 0:
+			data = str(data) + str(parsed.query)
+		if len(parsed.fragment) > 0:
+			data =str(data) + str(parsed.fragment)
+		list_words = re.sub(r"\W+"," ",data).split(" ")
+		c= collections.Counter(list_words)
+		for letter, count_words in c.most_common(1):
+			if count_words > 5:
+				return False
 		
+	try:
+		return ".ics.uci.edu" in parsed.hostname \
+			and not re.match(".*\.(css|js|bmp|gif|jpe?g|ico" + "|png|tiff?|mid|mp2|mp3|mp4"\
+			+ "|wav|avi|mov|mpeg|ram|m4v|mkv|ogg|ogv|pdf" \
+			+ "|ps|eps|tex|ppt|pptx|doc|docx|xls|xlsx|names|data|dat|exe|bz2|tar|msi|bin|7z|psd|dmg|iso|epub|dll|cnf|tgz|sha1" \
+			+ "|thmx|mso|arff|rtf|jar|csv"\
+			+ "|rm|smil|wmv|swf|wma|zip|rar|gz)$", parsed.path.lower())
+
+	except TypeError:
+		print ("TypeError for ", parsed)
+
 		
 # LOG INVALID URL RECEIVED FROM FRONTIER
 def log_invalid_url(url):
