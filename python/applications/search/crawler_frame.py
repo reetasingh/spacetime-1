@@ -28,7 +28,11 @@ LOG_HEADER = "[CRAWLER]"
 url_count = (set() 
     if not os.path.exists("successful_urls.txt") else 
     set([line.strip() for line in open("successful_urls.txt").readlines() if line.strip() != ""]))
-MAX_LINKS_TO_DOWNLOAD = 3000
+MAX_LINKS_TO_DOWNLOAD = 2
+hashes = dict()
+urls_max=dict();
+
+
 dict_subdomains = {}
 @Producer(ProducedLink)
 @GetterSetter(OneUnProcessedGroup)
@@ -41,7 +45,9 @@ class CrawlerFrame(IApplication):
         # Set user agent string to IR W17 UnderGrad <student_id1>, <student_id2> ...
         # If Graduate studetn, change the UnderGrad part to Grad.
         self.UserAgentString = "IR W17 Grad 18164476, 74047877"
-		
+        read_hash()
+        read_visited_url()
+
         self.frame = frame
         assert(self.UserAgentString != None)
         assert(self.app_id != "")
@@ -71,6 +77,8 @@ class CrawlerFrame(IApplication):
     def shutdown(self):
 		print "downloaded ", len(url_count), " in ", time() - self.starttime, " seconds."
 		analytics()
+		write_hash()
+		write_visited_url()
 		pass
 
 def save_count(urls):
@@ -113,14 +121,17 @@ def extract_next_links(rawDatas):
 			# if page is not found and similar other http response where page is blank
 			if page != None  or rawData.httpcode not in [204,400,401,402,403,405,406,408,409,410,411,412,413,414,415,416,417,451]:
 				if (len(page) > 0):
+					if compute_checksum((parent_url,page)) == False:
+						rawData.bad_url = True
+						continue
 					html = lxml.html.fromstring(page)
 				else:
 					generated.write("[" + strftime('%X %x %Z') + "]" + " Encountered URL with no page" + "\n")
-					rawData.bad_url = False
+					rawData.bad_url = True
 					continue
 			else:
 				generated.write("[" + strftime('%X %x %Z') + "]" + " Encountered URL with page issue - " + rawData.httpcode + "\n")
-				rawData.bad_url = False
+				rawData.bad_url = True
 				continue
 			temp_url_list = []
 			for link in html.iterlinks():
@@ -156,7 +167,7 @@ def is_valid(url):
 		
 	if "javascript:popUp(" in url:
 		return False
-	   
+
 	# Check if repeated words in the url - (path, fragment , query ): if word repeated more than 5 times, then the url is invalid
 	# eg: http://www.ics.uci.edu/about/bren/bren_press.php/bren_vision.php/gallery/gallery/gallery/visit/gallery/gallery_06_jpg.php/community/news/articles/gallery/gallery/grad/about_safety.php/gallery/about_deanmsg.php/gallery/gallery/gallery/gallery_10_jpg.php/gallery/gallery_04_jpg.php/visit/gallery/gallery/gallery_04_jpg.php
 	# http://www.ics.uci.edu/about/bren/bren_press.php/bren_vision.php/gallery/gallery/gallery/visit/gallery/gallery_06_jpg.php/community/news/articles/gallery/gallery/grad/about_safety.php/gallery/about_deanmsg.php/gallery/gallery/gallery/gallery_10_jpg.php/gallery/gallery_04_jpg.php/gallery/gallery_01_jpg.php/grad/gallery/visit/index.php/ICS/ics/about/
@@ -169,9 +180,11 @@ def is_valid(url):
 		list_words = re.sub(r"\W+"," ",data).split(" ")
 		c= collections.Counter(list_words)
 		for letter, count_words in c.most_common(1):
-			if count_words > 5:
+			if count_words > 10:
 				return False
-	
+	if check_trap(url)==True:
+		return False
+
 		
 	try:
 		return ".ics.uci.edu" in parsed.hostname \
@@ -292,4 +305,86 @@ def computer_average_download_time():
 				count_lines = count_lines + 1
 			average_dwnl_time = float(average_time/ count_lines)
 			return average_dwnl_time
-	
+
+
+
+def read_hash():
+    print "read_hash"
+    if os.path.isfile("hash.txt"):
+        with open("hash.txt", 'r') as f:
+            for line in f:
+                # print "in"
+                items = line.split(",")
+                key, values = items[0], items[1]
+                # print "####",key,values
+                hashes[key] = values.strip('\n')
+                # print hashes
+        f.close()
+
+def write_hash():
+    print "write_hash"
+    with open("hash.txt", "w") as myfile:
+        for url,hashcode in hashes.iteritems():
+            myfile.write(url+","+hashcode+"\n")
+    myfile.close()
+
+
+#CHECK HASH OF PAGE AND IF HASH ALREADY EXISTS (DIRECTED TO SAME PAGE) RETURN FALSE
+def compute_checksum(data):
+    # url and content in data
+    # hashes=dict()
+    hash=hashlib.sha224(data[1]).hexdigest()
+    if os.path.isfile("hash.txt"):
+        for url,hashcode in hashes.iteritems():
+            if hashcode==hash:
+                with open("failed_hash.txt","a") as ft:
+                    ft.write(data[0]+","+hashcode+"\n")
+                return False
+    hashes[data[0]]=hash
+    # with open("hash.txt", "a") as myfile:
+    #     myfile.write(data[0]+","+hash+"\n")
+    #     myfile.close()
+    # print hashes
+    return True
+    # print "***************",hashes
+
+
+
+def read_visited_url():
+    print "reading_found_urls"
+    if os.path.isfile("url.txt"):
+        with open("url.txt", 'r') as f:
+            for line in f:
+                items = line.split(",")
+                key, values = items[0], items[1]
+                urls_max[key] = values.strip('\n')
+        f.close()
+
+
+def write_visited_url():
+    print "writing_found_urls"
+    # print urls_max
+    with open("url.txt", "w") as myfile:
+        for url,count in urls_max.iteritems():
+            myfile.write(url+","+str(count)+"\n")
+    myfile.close()
+
+def check_trap(new_url):
+	# put data in the hash for the first time
+	# print new_url
+	parsed=urlparse(new_url)
+	x=parsed.netloc+parsed.path
+	if x in urls_max.keys():
+		if urls_max[x] > 15:
+			with open("trap.txt","a") as f:
+				f.write(str(x)+"\n")
+			return True
+		else:
+			urls_max[x]=urls_max[x]+1
+	else:
+		urls_max[x]=1
+	return False
+
+	# print urls_max
+	return check_spider_traps(x)
+

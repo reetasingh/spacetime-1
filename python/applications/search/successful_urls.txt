@@ -1,8 +1,2 @@
-http://www.ics.uci.edu/about/index.php/faculty/grad/index.php
-http://www.ics.uci.edu/about/bren/bren_press.php/bren_vision.php/about_safety.php/gallery/gallery/visit/grad/gallery/ugrad
-http://www.ics.uci.edu/about/bren/bren_press.php/grad/brenhall/gallery/gallery/gallery_02_jpg.php
-http://www.ics.uci.edu/about/bren/bren_vision.php/ICS/bren_press.php/about_deanmsg.php/about_contact.php/visit/ugrad/grad/visit/../../ugrad/index.php
-http://www.ics.uci.edu/~lab/students/printing.php
-http://www.ics.uci.edu/about/bren/bren_vision.php/ICS/bren_press.php/about_deanmsg.php/brenhall/search/index.php
-http://www.ics.uci.edu/about/bren/bren_press.php/bren_vision.php/ugrad/brenhall/gallery/gallery/gallery/search/gallery/gallery_13_jpg.php
-http://www.ics.uci.edu/about/bren/bren_press.php/bren_vision.php/ugrad/brenhall/gallery/gallery/about_deanmsg.php
+http://www.ics.uci.edu/about/bren/bren_press.php/gallery/gallery/gallery/gallery/ugrad/index.php
+http://www.ics.uci.edu/about/bren/bren_press.php/gallery/gallery/gallery/gallery/ugrad/gallery/gallery_11_jpg.php
