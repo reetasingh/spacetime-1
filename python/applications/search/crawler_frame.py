@@ -28,7 +28,7 @@ LOG_HEADER = "[CRAWLER]"
 url_count = (set() 
     if not os.path.exists("successful_urls.txt") else 
     set([line.strip() for line in open("successful_urls.txt").readlines() if line.strip() != ""]))
-MAX_LINKS_TO_DOWNLOAD = 5
+MAX_LINKS_TO_DOWNLOAD = 3000
 dict_subdomains = {}
 @Producer(ProducedLink)
 @GetterSetter(OneUnProcessedGroup)
@@ -153,8 +153,13 @@ def is_valid(url):
 	
 	if " " in url:
 		return False
+		
+	if "javascript:popUp(" in url:
+		return False
 	   
 	# Check if repeated words in the url - (path, fragment , query ): if word repeated more than 5 times, then the url is invalid
+	# eg: http://www.ics.uci.edu/about/bren/bren_press.php/bren_vision.php/gallery/gallery/gallery/visit/gallery/gallery_06_jpg.php/community/news/articles/gallery/gallery/grad/about_safety.php/gallery/about_deanmsg.php/gallery/gallery/gallery/gallery_10_jpg.php/gallery/gallery_04_jpg.php/visit/gallery/gallery/gallery_04_jpg.php
+	# http://www.ics.uci.edu/about/bren/bren_press.php/bren_vision.php/gallery/gallery/gallery/visit/gallery/gallery_06_jpg.php/community/news/articles/gallery/gallery/grad/about_safety.php/gallery/about_deanmsg.php/gallery/gallery/gallery/gallery_10_jpg.php/gallery/gallery_04_jpg.php/gallery/gallery_01_jpg.php/grad/gallery/visit/index.php/ICS/ics/about/
 	if len(parsed.path) > 0:
 		data = str(parsed.path)
 		if len(parsed.query) > 0:
@@ -166,6 +171,7 @@ def is_valid(url):
 		for letter, count_words in c.most_common(1):
 			if count_words > 5:
 				return False
+	
 		
 	try:
 		return ".ics.uci.edu" in parsed.hostname \
@@ -241,19 +247,16 @@ def analytics():
 # DATA IS STORED IN A DICTIONARY WITH SUBDOMAIN AS KEY AND COUNT AS VALUE
 # VALUE UPDATED ONCE URL WITH THAT SUBDOMAIN IS PROCESSED(RECIEVED AS WELL AS SENT TO FRONTIER)		
 def update_subdomains_count(url):
-	print "update function"
 	try:
 		parsed = urlparse(url)
 		if (".ics.uci.edu" in parsed.hostname):
 			new_hostname = parsed.hostname[0:len(parsed.hostname) - 12]
 			list_hostname = list(new_hostname)
-			print list_hostname
 			str=""
 			for k in range(len(list_hostname)-1,-1,-1):
 				if list_hostname[k] == '.':
 					break
 				str= str+ list_hostname[k]
-			print (str)
 			if (len(str) > 0):
 				str = str[::-1]
 				if str =="www":
@@ -264,7 +267,6 @@ def update_subdomains_count(url):
 					dict_subdomains[str] = int(dict_subdomains[str]) +1
 				else:
 					dict_subdomains[str] = 1
-				print dict_subdomains
 	except Exception as e:
 		print e
 		pass
