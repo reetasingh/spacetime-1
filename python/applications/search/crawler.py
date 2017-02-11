@@ -23,12 +23,12 @@ class Simulation(object):
     '''
     classdocs
     '''
-    def __init__(self, name, timeout, useragent):
+    def __init__(self, address, port):
         '''
         Constructor
         '''
-        frame_c = frame(time_step = timeout)
-        frame_c.attach_app(CrawlerFrame(frame_c, name, useragent))
+        frame_c = frame(address = "http://" + address + ":" + str(port) + "/", time_step = 1000)
+        frame_c.attach_app(CrawlerFrame(frame_c))
 
         frame_c.run_async()
         frame.loop()
@@ -53,9 +53,8 @@ def SetupLoggers():
 
 if __name__== "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('-n', '--name', type=str, default=str(uuid.uuid4()), help='Unique name to avoid conflict with other crawlers. (Default: uuid4 str)')
-    parser.add_argument('-t', '--timeout', type=int, default=1000, help='Politeness delay of the crawler.')
-    parser.add_argument('-u', '--useragent', type=str, default="Mondego Spacetime Test Crawler", help='UserAgentString for the crawler')
+    parser.add_argument('-a', '--address', type=str, help='Address of the distributing server')
+    parser.add_argument('-p', '--port', type=int, help='Port used by the distributing server')
     args = parser.parse_args()
     SetupLoggers()
-    sim = Simulation(args.name, args.timeout, args.useragent)
+    sim = Simulation(args.address, args.port)

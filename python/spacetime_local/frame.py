@@ -16,7 +16,7 @@ import sys
 import os
 import zlib
 
-from pcc.dataframe import dataframe, DataframeModes
+from pcc.dataframe.dataframe_client import dataframe_client as dataframe
 from .IFrame import IFrame
 from pcc.recursive_dictionary import RecursiveDictionary
 
@@ -80,7 +80,7 @@ class frame(IFrame):
         self.__host_wire_format = {}
         self.__typemap = {}
         self.__name2type = {}
-        self.object_store = dataframe(mode = DataframeModes.Client)
+        self.object_store = dataframe()
         self.object_store.start_recording = True
         if not address.endswith('/'):
             address += '/'
@@ -173,7 +173,7 @@ class frame(IFrame):
         self.__name2type = dict([(tp.__realname__, tp) for tp in all_types])
         self.object_store.add_types(all_types)
         for host in self.__host_typemap:
-            self.__host_to_push_groupkey[host] = set([self.object_store.member_to_group[tp.__realname__]
+            self.__host_to_push_groupkey[host] = set([self.object_store.get_group_key(tp)
                                                       for tp in self.__host_typemap[host][Modes.GetterSetter].union(
                                                                 self.__host_typemap[host][Modes.Setter]).union(
                                                                 self.__host_typemap[host][Modes.Producing]).union(
@@ -355,7 +355,7 @@ class frame(IFrame):
         if tp in self.__observed_types:
             if oid:
                 # Have to get this to work
-                return self.object_store.get_one(tp, oid)
+                return self.object_store.get(tp, oid)
             return self.object_store.get(tp)
         else:
             raise Exception("Application %s does not annotate type %s" % (self.__appname, tp))
@@ -472,8 +472,9 @@ class frame(IFrame):
     
     @timethis
     def __process_pull_resp(self, resp):
-        self.object_store.apply_all(resp)
-        self.object_store.clear_record()
+        if resp and "gc" in resp:
+            self.object_store.apply_changes(resp)
+            self.object_store.clear_record()
 
     @timethis
     def __pull(self):
@@ -499,7 +500,7 @@ class frame(IFrame):
                     updates.CopyFrom(dataframe_change)
                 except HTTPError as exc:
                     self.__handle_request_errors(resp, exc)
-            #json.dump(updates, open("pull_" + self.get_app().__class__.__name__ + ".json", "a") , sort_keys = True, separators = (',', ': '), indent = 4)
+            #json.dump(updates, open("pull_" + self.__appname + ".json", "a") , sort_keys = True, separators = (',', ': '), indent = 4)
             self.__process_pull_resp(updates)
         except ConnectionError:
             self.logger.exception("Disconnected from host.")
@@ -513,7 +514,7 @@ class frame(IFrame):
         if self.__instrumented:
             self._instruments['bytes sent'] = 0
         changes = self.object_store.get_record()
-        #json.dump(changes, open("push_" + self.get_app().__class__.__name__ + ".json", "a") , sort_keys = True, separators = (',', ': '), indent = 4)
+        #json.dump(changes, open("push_" + self.__appname + ".json", "a") , sort_keys = True, separators = (',', ': '), indent = 4)
             
         for host in self.__host_typemap:
             try:

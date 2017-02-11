@@ -8,7 +8,8 @@ from time import sleep
 from pcc.recursive_dictionary import RecursiveDictionary
 from common.wire_formats import FORMATS
 from datamodel.all import DATAMODEL_TYPES
-from pcc.dataframe import dataframe, DataframeModes
+from pcc.dataframe.dataframe_threading import dataframe_wrapper as dataframe
+from pcc.dataframe.application_queue import ApplicationQueue
 from common.modes import Modes
 from common.converter import create_jsondict, create_complex_obj
 
@@ -45,7 +46,6 @@ class dataframe_stores(object):
         
     def add_new_dataframe(self, name, df):
         self.__pause()    
-        self.master_dataframe.connect(df)
         self.app_to_df[name] = df
 
     def delete_app(self, app):
@@ -54,8 +54,6 @@ class dataframe_stores(object):
 
     def register_app(self, app, type_map, wire_format = "json"):
         self.__pause()
-        df = dataframe(mode=DataframeModes.ApplicationCache)
-        df.start_recording = True
         types_to_get = set()
         for mode in FETCHING_MODES:
             types_to_get.update(set(type_map.setdefault(mode, set())))
@@ -65,10 +63,9 @@ class dataframe_stores(object):
         types_to_track = types_to_track.difference(types_to_get)
         real_types_to_get = [self.name2class[tpstr] for tpstr in types_to_get]
         real_types_to_track = [self.name2class[tpstr] for tpstr in types_to_track]
-        df.add_types(real_types_to_get)
-        self.master_dataframe.add_types(real_types_to_get)
-        df.add_types(real_types_to_track, tracking = True)
-        self.master_dataframe.add_types(real_types_to_track, tracking = True)
+        self.master_dataframe.add_types(real_types_to_get + real_types_to_track)
+        
+        df = ApplicationQueue(app, real_types_to_get + real_types_to_track, self.master_dataframe)
         self.add_new_dataframe(app, df)
         # Add all types to master.
         types_to_add_to_master = set()
@@ -94,7 +91,7 @@ class dataframe_stores(object):
         dfc = dfc_type()
         dfc.ParseFromString(changes)
         if app in self.app_to_df:
-            self.master_dataframe.apply_all(dfc, except_df = self.app_to_df[app])
+            self.master_dataframe.apply_changes(dfc, except_app = app)
 
     def getupdates(self, app):
         self.__pause()

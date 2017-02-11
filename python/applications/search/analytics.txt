@@ -1,0 +1,4 @@
+
+URL with max outbound links: http://www.ics.uci.edu/about/bren/bren_press.php/gallery/gallery/gallery/gallery/ugrad/gallery/gallery_11_jpg.php  	, Number of outbound links: 154
+Count of invalid links recieved: 5
+ Average download time: 0.12600004673 seconds

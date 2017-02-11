@@ -1,0 +1,4 @@
+
+URL with max outbound links: http://wics.ics.uci.edu/contact  	, Number of outbound links: 110
+Count of invalid links recieved: 0
+ Average download time: 0.281400012971 seconds
