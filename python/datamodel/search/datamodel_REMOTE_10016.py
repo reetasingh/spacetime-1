@@ -12,7 +12,6 @@ from pcc.projection import projection
 from pcc.attributes import dimension, primarykey, count
 from pcc.impure import impure
 import socket, base64, requests
-import time
 try:
     from urllib2 import Request, urlopen, HTTPError, URLError
     from urlparse import urlparse, parse_qs
@@ -393,16 +392,13 @@ class OneUnProcessedGroup(object):
     @staticmethod
     def __predicate__(upl):
         return upl.underprocess <= 10
-	        
 
     def download(self, UserAgentString, is_valid, timeout = 2, MaxPageSize = 1048576, MaxRetryDownloadOnFail = 5, retry_count = 0):
         try:
             success_urls = list()
             result = list()
-            url_time_download = open("url_download_time.txt", "a")
             for l in self.link_group:
                 if is_valid(l.full_url):
-                    start = time.time()
                     if robot_manager.Allowed(l.full_url, UserAgentString):
                         content, success = l.download(
                             UserAgentString,
@@ -411,30 +407,18 @@ class OneUnProcessedGroup(object):
                             MaxRetryDownloadOnFail,
                             retry_count)
                         if success:
-                            end = time.time()
-                            time_diff = end - start
-                            url_time_download.write(l.full_url+  "  ," + str(time_diff) + "\n")
                             success_urls.append(l.full_url)
                         result.append(content)
                     else:
                         l.marked_invalid_by += ["Robot Rule"]
                 else:
-                    l.marked_invalid_by += [UserAgentString]
-                    with open("invalid_urls.txt", "a") as invalid_url:
-                        l.bad_url = True
-                        invalid_url.write(l.full_url+ "\n")
-                        invalid_url.close()
-					if UserAgentString not in set(l.marked_invalid_by):
+                    if UserAgentString not in set(l.marked_invalid_by):
                         l.marked_invalid_by += [UserAgentString]
                     if UserAgentString not in set(l.bad_url):
                         l.bad_url += [UserAgentString]
-			url_time_download.close()
-                    
             return result, success_urls
         except AttributeError:
             return list(), list()
-			
-	
 
 @subset(Link)
 class DomainCount(object):

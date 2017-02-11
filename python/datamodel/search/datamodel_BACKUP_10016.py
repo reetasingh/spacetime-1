@@ -419,17 +419,19 @@ class OneUnProcessedGroup(object):
                     else:
                         l.marked_invalid_by += ["Robot Rule"]
                 else:
+<<<<<<< HEAD
                     l.marked_invalid_by += [UserAgentString]
                     with open("invalid_urls.txt", "a") as invalid_url:
                         l.bad_url = True
                         invalid_url.write(l.full_url+ "\n")
                         invalid_url.close()
-					if UserAgentString not in set(l.marked_invalid_by):
+			url_time_download.close()
+=======
+                    if UserAgentString not in set(l.marked_invalid_by):
                         l.marked_invalid_by += [UserAgentString]
                     if UserAgentString not in set(l.bad_url):
                         l.bad_url += [UserAgentString]
-			url_time_download.close()
-                    
+>>>>>>> upstream/IR_student_crawler
             return result, success_urls
         except AttributeError:
             return list(), list()

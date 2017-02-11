@@ -424,12 +424,7 @@ class OneUnProcessedGroup(object):
                         l.bad_url = True
                         invalid_url.write(l.full_url+ "\n")
                         invalid_url.close()
-					if UserAgentString not in set(l.marked_invalid_by):
-                        l.marked_invalid_by += [UserAgentString]
-                    if UserAgentString not in set(l.bad_url):
-                        l.bad_url += [UserAgentString]
 			url_time_download.close()
-                    
             return result, success_urls
         except AttributeError:
             return list(), list()
