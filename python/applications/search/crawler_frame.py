@@ -2,7 +2,6 @@ import logging
 from datamodel.search.datamodel import ProducedLink, OneUnProcessedGroup, robot_manager
 from spacetime_local.IApplication import IApplication
 from spacetime_local.declarations import Producer, GetterSetter, Getter
-#from lxml import html,etree
 import re, os
 from time import time
 from time import gmtime, strftime
@@ -28,7 +27,7 @@ LOG_HEADER = "[CRAWLER]"
 url_count = (set() 
     if not os.path.exists("successful_urls.txt") else 
     set([line.strip() for line in open("successful_urls.txt").readlines() if line.strip() != ""]))
-MAX_LINKS_TO_DOWNLOAD = 10
+MAX_LINKS_TO_DOWNLOAD = 3000
 hashes = dict()
 urls_max=dict();
 
@@ -111,8 +110,7 @@ def extract_next_links(rawDatas):
 
     Suggested library: lxml
 	'''
-	generated = open("generated_urls.txt", "a")
-	
+	generated = open("generated_urls.txt", "a")	
 	for rawData in rawDatas:
 		try:
 			parent_url = rawData.url
@@ -120,7 +118,7 @@ def extract_next_links(rawDatas):
 			page = rawData.content
 			
 			# if page is not found and similar other http response where page is blank
-			if page != None  or rawData.httpcode not in [204,400,401,402,403,405,406,408,409,410,411,412,413,414,415,416,417,451]:
+			if page != None  and rawData.httpcode not in [204,400,401,402,403,405,406,408,409,410,411,412,413,414,415,416,417,451]:
 				if (len(page) > 0):
 					if compute_checksum((parent_url,page)) == False:
 						rawData.bad_url = True
@@ -154,44 +152,40 @@ def extract_next_links(rawDatas):
 			continue 
 	return outputLinks
 
+
 def is_valid(url):
 
 	update_subdomains_count(url)
-	
+
 	try:
 		parsed = urlparse(url)
-		print "scheme check"
+		# print "scheme check"
 		if parsed.scheme not in set(["http", "https"]):
 			return False
-		print "domain check"
+		# print "domain check"
 		if len(parsed.netloc) == 0:
 			return False
-	
 		if " " in url:
 			return False
-		print "javascript check"
+		# print "javascript check"
 		if "javascript:popUp(" in url:
 			return False
-		
-		print "hostname check"
+		# print "hostname check"
 		if ".ics.uci.edu" not in parsed.hostname:
 			return False
-			
-		print "invalid file check"
+		# print "invalid file check"
 		invalid_end = [".war",".txt",".py",".java",".m",".gif",".js",".pdf",".jpg",".jpeg",".css",".bmp",".ico",".png",".tiff",".mid",".mp2",".mp3",".mp4",".wav",".avi",".mov",".mpeg",".ram",".m4v",".mkv",".ogg",".ogv",".pdf",".text",".thmx",".mso",".arff",".rtf",".jar",".csv","rm",".smil",".wmv",".swf",".wma",".zip",".rar",".gz",".ps",".eps",".tex",".ppt",".pptx",".doc",".docx",".xls",".xlsx",".names",".data",".dat",".exe",".bz2",".tar",".msi",".bin",".7z",".psd",".dmg",".iso",".epub",".dll",".cnf",".tgz",".sha1"]
 		if parsed.path.lower().endswith(tuple(invalid_end)):
 			return False
 			
-	
-
 	# Check if repeated words in the url - (path, fragment , query ): if word repeated more than 5 times, then the url is invalid
 	# eg: http://www.ics.uci.edu/about/bren/bren_press.php/bren_vision.php/gallery/gallery/gallery/visit/gallery/gallery_06_jpg.php/community/news/articles/gallery/gallery/grad/about_safety.php/gallery/about_deanmsg.php/gallery/gallery/gallery/gallery_10_jpg.php/gallery/gallery_04_jpg.php/visit/gallery/gallery/gallery_04_jpg.php
 	# http://www.ics.uci.edu/about/bren/bren_press.php/bren_vision.php/gallery/gallery/gallery/visit/gallery/gallery_06_jpg.php/community/news/articles/gallery/gallery/grad/about_safety.php/gallery/about_deanmsg.php/gallery/gallery/gallery/gallery_10_jpg.php/gallery/gallery_04_jpg.php/gallery/gallery_01_jpg.php/grad/gallery/visit/index.php/ICS/ics/about/
-		print " invalid word check"
+	# 	print " invalid word check"
 		if len(parsed.path) > 0:
-			data = str(parsed.path)
+			data = str(parsed.path)+"\\"
 			if len(parsed.query) > 0:
-				data = str(data) + str(parsed.query)
+				data = str(data) + str(parsed.query)+"\\"
 			if len(parsed.fragment) > 0:
 				data =str(data) + str(parsed.fragment)
 			list_words = re.sub(r"\W+"," ",data).split(" ")
@@ -202,10 +196,9 @@ def is_valid(url):
 		if check_trap(url)==True:
 			return False
 		return True
+	
 	except TypeError:
 		return False
-	
-
 		
 # LOG INVALID URL RECEIVED FROM FRONTIER
 def log_invalid_url(url):
@@ -226,32 +219,37 @@ def count_invalid_url():
 
 # LOG URL, NUMBER OF LINKS EXTRACTED FOR VALID URL RECIEVED FORM FRONTIER	
 def log_url_count(url, count):
-    if count == None:
-        count = 0
-    with open("url_count.txt", "a") as url_count_file:
-        a=str(str(url)+","+str(count)+'\n')
-        url_count_file.write(a)
-        url_count_file.close()
-
+	try:
+		if count == None:
+			count=0
+		with open("url_count.txt", "a") as url_count_file:
+			a=str(str(url)+","+str(count)+'\n')
+			url_count_file.write(a)
+			url_count_file.close()
+	except Exception as e:
+		print e
+		pass
 
 # GET URL HAVING MAXIMUM OUTBOUND LINKS
 def get_url_with_max_outbound():
-	max_count =-1;
-	max_url = None
-	if os.path.isfile("url_count.txt"):
-		with open("url_count.txt", "r") as url_count_file:
-			for line in url_count_file:
-				url_list=line.split(',')
-				url = url_list[0]
-				count = int(url_list[1])
-				if count > max_count:
-					max_count = count
-					max_url = url
-	return max_url, max_count
-	
-	
-	
-# ANALYTICS METHOD FOR CRAWALER				
+	try:
+		max_count =-1;
+		max_url = None
+		if os.path.isfile("url_count.txt"):
+			with open("url_count.txt", "r") as url_count_file:
+				for line in url_count_file:
+					url_list=line.split(',')
+					url = url_list[0]
+					count = int(url_list[1])
+					if count > max_count:
+						max_count = count
+						max_url = url
+		return max_url, max_count
+	except Exception as e:
+		print e
+		pass
+
+# ANALYTICS METHOD FOR CRAWLER WHICH LOGS URL WITH MAX LINKS, COUNT OF INVALID LINKS AND AVERAGE DOWNLOAD TIME				
 def analytics():
 	with open("analytics.txt", "w") as analytics_file:
 		url_key, max_url_count = get_url_with_max_outbound()
@@ -263,8 +261,7 @@ def analytics():
 		analytics_file.write("\nCount of invalid links recieved: " + str(invalid_url_count))
 		analytics_file.write("\n Average download time: " + str(computer_average_download_time()) + " seconds")
 		write_subdomain()
-		
-		
+			
 # METHOD TO UPDATE THE COUNT OF SUBDOMAINS VISITED
 # DATA IS STORED IN A DICTIONARY WITH SUBDOMAIN AS KEY AND COUNT AS VALUE
 # VALUE UPDATED ONCE URL WITH THAT SUBDOMAIN IS PROCESSED(RECIEVED AS WELL AS SENT TO FRONTIER)		
@@ -295,7 +292,6 @@ def update_subdomains_count(url):
 		print e
 		pass
 	
-
 # WRITE THE SUBDOMAIN ON THE FILE - SUBDOMAIN.TXT
 def write_subdomain():
     with open("subdomain.txt", "w") as myfile:
@@ -305,22 +301,24 @@ def write_subdomain():
 
 # READ  THE DOWNLOAD TIME OF ALL THE DOWNLOADED URLS AND GIVE AVERAGE DOWNLOAD TIME
 def computer_average_download_time():
-	average_time = 0.0
-	count_lines = 0
-	if os.path.isfile("url_download_time.txt"):
-		with open("url_download_time.txt", "r") as url_download_time_file:
-			for line in url_download_time_file:
-				url_list=line.split(',')
-				time_download = float(url_list[1])
-				average_time = average_time + time_download
-				count_lines = count_lines + 1
-			if(count_lines > 0):
-				average_dwnl_time = float(average_time/ count_lines)
-				return average_dwnl_time
-			return 0
+	try:
+		average_time = 0.0
+		count_lines = 0
+		if os.path.isfile("url_download_time.txt"):
+			with open("url_download_time.txt", "r") as url_download_time_file:
+				for line in url_download_time_file:
+					url_list=line.split(',')
+					time_download = float(url_list[1])
+					average_time = average_time + time_download
+					count_lines = count_lines + 1
+				if(count_lines > 0):
+					average_dwnl_time = float(average_time/ count_lines)
+					return average_dwnl_time
+				return 0
+	except Exception as e:
+		return 0			
 
-
-
+# READ THE HASH FILE TO FIND IF THE CORRESPONDING URL IS ALREADY EXPLORED
 def read_hash():
     if os.path.isfile("hash.txt"):
         with open("hash.txt", 'r') as f:
@@ -333,34 +331,29 @@ def read_hash():
                 # print hashes
         f.close()
 
+# WRITE THE HASH FILE WITH URL AND ITS CORRESPONDING HASH CODE
 def write_hash():
     with open("hash.txt", "w") as myfile:
         for url,hashcode in hashes.iteritems():
             myfile.write(url+","+hashcode+"\n")
     myfile.close()
 
-
 #CHECK HASH OF PAGE AND IF HASH ALREADY EXISTS (DIRECTED TO SAME PAGE) RETURN FALSE
 def compute_checksum(data):
-    # url and content in data
-    # hashes=dict()
-    hash=hashlib.sha224(data[1]).hexdigest()
-    if os.path.isfile("hash.txt"):
-        for url,hashcode in hashes.iteritems():
-            if hashcode==hash:
-                with open("failed_hash.txt","a") as ft:
-                    ft.write(data[0]+","+hashcode+"\n")
-                return False
-    hashes[data[0]]=hash
-    # with open("hash.txt", "a") as myfile:
-    #     myfile.write(data[0]+","+hash+"\n")
-    #     myfile.close()
-    # print hashes
-    return True
-    # print "***************",hashes
+	try:
+		hash=hashlib.sha224(data[1]).hexdigest()
+		if os.path.isfile("hash.txt"):
+			for url,hashcode in hashes.iteritems():
+				if hashcode==hash:
+					with open("failed_hash.txt","a") as ft:
+						ft.write(data[0]+","+hashcode+"\n")
+					return False
+		hashes[data[0]]=hash
+		return True
+	except Exception as e:
+		return False
 
-
-
+# READ THE URL FILE CORRESPONDING TO VISITED URLS
 def read_visited_url():
     print "reading_found_urls"
     if os.path.isfile("url.txt"):
@@ -371,7 +364,7 @@ def read_visited_url():
                 urls_max[key] = values.strip('\n')
         f.close()
 
-
+# WRITE THE URL FILE CORRESPONDING TO VISITED URLS
 def write_visited_url():
     # print urls_max
     with open("url.txt", "w") as myfile:
@@ -379,9 +372,8 @@ def write_visited_url():
             myfile.write(url+","+str(count)+"\n")
     myfile.close()
 
+# CHECK FOR THE CRAWLER TRAP-IF MORE THAN 15 PAGES WITH SAME NETLOC+PATH+QUERY_KEYS RETURN TRUE
 def check_trap(new_url):
-	# put data in the hash for the first time
-	# print new_url
 	try:
 		print "in check trap"
 		parsed=urlparse(new_url)
