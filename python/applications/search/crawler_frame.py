@@ -28,7 +28,7 @@ LOG_HEADER = "[CRAWLER]"
 url_count = (set() 
     if not os.path.exists("successful_urls.txt") else 
     set([line.strip() for line in open("successful_urls.txt").readlines() if line.strip() != ""]))
-MAX_LINKS_TO_DOWNLOAD = 2
+MAX_LINKS_TO_DOWNLOAD = 10
 hashes = dict()
 urls_max=dict();
 
@@ -65,8 +65,9 @@ class CrawlerFrame(IApplication):
             print "Got a Group"
             outputLinks, urlResps = process_url_group(g, self.UserAgentString)
             for urlResp in urlResps:
-                if urlResp.bad_url and self.UserAgentString not in set(urlResp.dataframe_obj.bad_url):
-                    urlResp.dataframe_obj.bad_url += [self.UserAgentString]
+				pass
+                #if urlResp.bad_url and self.UserAgentString not in set(urlResp.dataframe_obj.bad_url):
+                    #urlResp.dataframe_obj.bad_url += [self.UserAgentString]
             for l in outputLinks:
                 if is_valid(l) and robot_manager.Allowed(l, self.UserAgentString):
                     lObj = ProducedLink(l, self.UserAgentString)
@@ -154,48 +155,56 @@ def extract_next_links(rawDatas):
 	return outputLinks
 
 def is_valid(url):
+
 	update_subdomains_count(url)
-	parsed = urlparse(url)
-	if parsed.scheme not in set(["http", "https"]):
-		return False
-	   
-	if len(parsed.netloc) == 0:
-		return False
 	
-	if " " in url:
-		return False
+	try:
+		parsed = urlparse(url)
+		print "scheme check"
+		if parsed.scheme not in set(["http", "https"]):
+			return False
+		print "domain check"
+		if len(parsed.netloc) == 0:
+			return False
+	
+		if " " in url:
+			return False
+		print "javascript check"
+		if "javascript:popUp(" in url:
+			return False
 		
-	if "javascript:popUp(" in url:
-		return False
+		print "hostname check"
+		if ".ics.uci.edu" not in parsed.hostname:
+			return False
+			
+		print "invalid file check"
+		invalid_end = [".war",".txt",".py",".java",".m",".gif",".js",".pdf",".jpg",".jpeg",".css",".bmp",".ico",".png",".tiff",".mid",".mp2",".mp3",".mp4",".wav",".avi",".mov",".mpeg",".ram",".m4v",".mkv",".ogg",".ogv",".pdf",".text",".thmx",".mso",".arff",".rtf",".jar",".csv","rm",".smil",".wmv",".swf",".wma",".zip",".rar",".gz",".ps",".eps",".tex",".ppt",".pptx",".doc",".docx",".xls",".xlsx",".names",".data",".dat",".exe",".bz2",".tar",".msi",".bin",".7z",".psd",".dmg",".iso",".epub",".dll",".cnf",".tgz",".sha1"]
+		if parsed.path.lower().endswith(tuple(invalid_end)):
+			return False
+			
+	
 
 	# Check if repeated words in the url - (path, fragment , query ): if word repeated more than 5 times, then the url is invalid
 	# eg: http://www.ics.uci.edu/about/bren/bren_press.php/bren_vision.php/gallery/gallery/gallery/visit/gallery/gallery_06_jpg.php/community/news/articles/gallery/gallery/grad/about_safety.php/gallery/about_deanmsg.php/gallery/gallery/gallery/gallery_10_jpg.php/gallery/gallery_04_jpg.php/visit/gallery/gallery/gallery_04_jpg.php
 	# http://www.ics.uci.edu/about/bren/bren_press.php/bren_vision.php/gallery/gallery/gallery/visit/gallery/gallery_06_jpg.php/community/news/articles/gallery/gallery/grad/about_safety.php/gallery/about_deanmsg.php/gallery/gallery/gallery/gallery_10_jpg.php/gallery/gallery_04_jpg.php/gallery/gallery_01_jpg.php/grad/gallery/visit/index.php/ICS/ics/about/
-	if len(parsed.path) > 0:
-		data = str(parsed.path)
-		if len(parsed.query) > 0:
-			data = str(data) + str(parsed.query)
-		if len(parsed.fragment) > 0:
-			data =str(data) + str(parsed.fragment)
-		list_words = re.sub(r"\W+"," ",data).split(" ")
-		c= collections.Counter(list_words)
-		for letter, count_words in c.most_common(1):
-			if count_words > 10:
-				return False
-	if check_trap(url)==True:
-		return False
-
-		
-	try:
-		return ".ics.uci.edu" in parsed.hostname \
-			and not re.match(".*\.(css|js|bmp|gif|jpe?g|ico" + "|png|tiff?|mid|mp2|mp3|mp4"\
-			+ "|wav|avi|mov|mpeg|ram|m4v|mkv|ogg|ogv|pdf" \
-			+ "|ps|eps|tex|ppt|pptx|doc|docx|xls|xlsx|names|data|dat|exe|bz2|tar|msi|bin|7z|psd|dmg|iso|epub|dll|cnf|tgz|sha1" \
-			+ "|thmx|mso|arff|rtf|jar|csv"\
-			+ "|rm|smil|wmv|swf|wma|zip|rar|gz)$", parsed.path.lower())
-
+		print " invalid word check"
+		if len(parsed.path) > 0:
+			data = str(parsed.path)
+			if len(parsed.query) > 0:
+				data = str(data) + str(parsed.query)
+			if len(parsed.fragment) > 0:
+				data =str(data) + str(parsed.fragment)
+			list_words = re.sub(r"\W+"," ",data).split(" ")
+			c= collections.Counter(list_words)
+			for letter, count_words in c.most_common(1):
+				if count_words > 8:
+					return False
+		if check_trap(url)==True:
+			return False
+		return True
 	except TypeError:
-		print ("TypeError for ", parsed)
+		return False
+	
 
 		
 # LOG INVALID URL RECEIVED FROM FRONTIER
@@ -249,7 +258,7 @@ def analytics():
 		if(url_key is not None):
 			analytics_file.write("\nURL with max outbound links: " + str(url_key) + "  	, Number of outbound links: " + str(max_url_count))
 		else:
-			analytics_file.write("\n No URL's recieved")
+			analytics_file.write("\n No valid URL's recieved")
 		invalid_url_count = count_invalid_url()
 		analytics_file.write("\nCount of invalid links recieved: " + str(invalid_url_count))
 		analytics_file.write("\n Average download time: " + str(computer_average_download_time()) + " seconds")
@@ -262,24 +271,26 @@ def analytics():
 def update_subdomains_count(url):
 	try:
 		parsed = urlparse(url)
-		if (".ics.uci.edu" in parsed.hostname):
-			new_hostname = parsed.hostname[0:len(parsed.hostname) - 12]
-			list_hostname = list(new_hostname)
-			str=""
-			for k in range(len(list_hostname)-1,-1,-1):
-				if list_hostname[k] == '.':
-					break
-				str= str+ list_hostname[k]
-			if (len(str) > 0):
-				str = str[::-1]
-				if str =="www":
-					str = "www.ics.uci.edu"
-				else:
-					str = str +".ics.uci.edu"
-				if (str in dict_subdomains.keys()):
-					dict_subdomains[str] = int(dict_subdomains[str]) +1
-				else:
-					dict_subdomains[str] = 1
+		if(len(parsed.netloc) > 0):
+			if (".ics.uci.edu" in parsed.hostname):
+				new_hostname = parsed.hostname[0:len(parsed.hostname) - 12]
+				list_hostname = list(new_hostname)
+				str=""
+				if (len(list_hostname) >0):
+					for k in range(len(list_hostname)-1,-1,-1):
+						if list_hostname[k] == '.':
+							break
+						str= str+ list_hostname[k]
+					if (len(str) > 0):
+						str = str[::-1]
+						if str =="www":
+							str = "www.ics.uci.edu"
+						else:
+							str = str +".ics.uci.edu"
+						if (str in dict_subdomains.keys()):
+							dict_subdomains[str] = int(dict_subdomains[str]) +1
+						else:
+							dict_subdomains[str] = 1
 	except Exception as e:
 		print e
 		pass
@@ -303,13 +314,14 @@ def computer_average_download_time():
 				time_download = float(url_list[1])
 				average_time = average_time + time_download
 				count_lines = count_lines + 1
-			average_dwnl_time = float(average_time/ count_lines)
-			return average_dwnl_time
+			if(count_lines > 0):
+				average_dwnl_time = float(average_time/ count_lines)
+				return average_dwnl_time
+			return 0
 
 
 
 def read_hash():
-    print "read_hash"
     if os.path.isfile("hash.txt"):
         with open("hash.txt", 'r') as f:
             for line in f:
@@ -322,7 +334,6 @@ def read_hash():
         f.close()
 
 def write_hash():
-    print "write_hash"
     with open("hash.txt", "w") as myfile:
         for url,hashcode in hashes.iteritems():
             myfile.write(url+","+hashcode+"\n")
@@ -362,7 +373,6 @@ def read_visited_url():
 
 
 def write_visited_url():
-    print "writing_found_urls"
     # print urls_max
     with open("url.txt", "w") as myfile:
         for url,count in urls_max.iteritems():
@@ -372,19 +382,28 @@ def write_visited_url():
 def check_trap(new_url):
 	# put data in the hash for the first time
 	# print new_url
-	parsed=urlparse(new_url)
-	x=parsed.netloc+parsed.path
-	if x in urls_max.keys():
-		if urls_max[x] > 15:
-			with open("trap.txt","a") as f:
-				f.write(str(x)+"\n")
-			return True
+	try:
+		print "in check trap"
+		parsed=urlparse(new_url)
+		if len(parsed.query) > 0: 
+			query1 = parse_qs(parsed.query)
+			s =""
+			for key in sorted(query1):
+				s = s + key 
+			x= parsed.netloc + parsed.path + s
+			if x in urls_max.keys():
+				if urls_max[x] > 10:
+					with open("trap.txt","a") as f:
+						f.write(str(x)+"\n")
+					return True
+				else:
+					urls_max[x]=urls_max[x]+1
+			else:
+				urls_max[x]=1
+			return False
 		else:
-			urls_max[x]=urls_max[x]+1
-	else:
-		urls_max[x]=1
-	return False
-
-	# print urls_max
-	return check_spider_traps(x)
+			return False
+	except Exception as e:
+		print e
+		return False
 

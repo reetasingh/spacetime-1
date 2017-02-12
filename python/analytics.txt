@@ -1,4 +1,4 @@
 
-URL with max outbound links: http://wics.ics.uci.edu/contact  	, Number of outbound links: 110
-Count of invalid links recieved: 0
- Average download time: 0.281400012971 seconds
+URL with max outbound links: http://www.ics.uci.edu/about/visit/../bren/index.php/bren_advance.php/../visit/index.php/ICS/ics/about/about_facts/../visit/index.php/index.php/../about_contact.php/ICS/ics/about/about_facts/bren_advance.php  	, Number of outbound links: 121
+Count of invalid links recieved: 135
+ Average download time: 0.125200033188 seconds

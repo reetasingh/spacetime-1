@@ -1,3 +1,0 @@
-calendar.ics.uci.edu,2
-intranet.ics.uci.edu,4
-www.ics.uci.edu,278

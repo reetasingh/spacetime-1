@@ -1,5 +1,3 @@
-wics.ics.uci.edu,92
-alumni.ics.uci.edu,1
-calendar.ics.uci.edu,6
-www.ics.uci.edu,253
-intranet.ics.uci.edu,3
+calendar.ics.uci.edu,4
+intranet.ics.uci.edu,8
+www.ics.uci.edu,557

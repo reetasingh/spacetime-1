@@ -1,5 +1,5 @@
-https://www.ics.uci.edu/about/annualreport/2005-06/alumni.php  ,1.29699993134
-http://www.ics.uci.edu/community/news/articles/view_article?id=58  ,0.0940001010895
-http://www.ics.uci.edu/community/news/articles/view_article?id=50  ,0.0
-http://wics.ics.uci.edu/contact  ,0.0160000324249
-https://www.ics.uci.edu/community/news/press/index.php  ,0.0
+http://www.ics.uci.edu/about/visit/../bren/index.php/bren_advance.php/../brenhall/index.php/../about_safety.php  ,0.219000101089
+http://www.ics.uci.edu/about/visit/../bren/index.php/bren_advance.php/../visit/index.php/ICS/ics/about/about_facts/../visit/index.php/index.php/../about_contact.php/bren_advance.php  ,0.203000068665
+http://www.ics.uci.edu/about/visit/../bren/index.php/bren_advance.php/../brenhall/index.php/bren_vision.php/../../grad/index.php  ,0.0940001010895
+http://www.ics.uci.edu/about/visit/../bren/index.php/bren_advance.php/../visit/index.php/ICS/ics/about/about_facts/../visit/index.php/index.php/../about_contact.php/ICS/ics/about/about_facts/bren_advance.php  ,0.109999895096
+http://www.ics.uci.edu/~vpalepu/2013/03/03/Plotting-Box-plots-in-Groups-for-Vectors-of-Varying-Lengths.html  ,0.0
